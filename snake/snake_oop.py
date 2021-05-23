@@ -2,12 +2,11 @@ import math
 import random
 import sys
 import pygame
-import tkinter as tk
-from tkinter import messagebox
 
 width = 600
 rows = 30
 rowW = width // rows
+iniPos = (rows // 2, rows // 2)
 minTick = 1.5
 maxTick = 30
 tickInc = (maxTick) / (rows * rows)
@@ -100,7 +99,7 @@ class Snake():
             oldPos = c.pos
             if c == self.head:
                 if not c.move(self.turns[c.pos]) or c.pos in self.turns:
-                    sys.exit()
+                    message_box('Has Perdido', 'Vuelve a intentarlo')
             else:
                 c.move(self.turns[c.pos])
             if c == self.body[-1]:
@@ -111,9 +110,6 @@ class Snake():
                 else:
                     self.turns.pop(oldPos)
         
-    def reset(self, pos):
-        pass
-
     def addCube(self):
         self.pendingCube = True
 
@@ -155,6 +151,9 @@ def redrawWindow(surface, snake, snack):
     drawGrid(surface)
     snack.draw(surface)
     snake.draw(surface)
+    font = pygame.font.SysFont("monospace", 15)
+    score = font.render(f"Puntuació: {snake.snakeSize() - 2}", 1, (255, 255, 255))
+    surface.blit(score, (4, 2))
     pygame.display.update()
 
 def randomSnack(surface, snake):
@@ -170,16 +169,17 @@ def message_box(subject, content):
     pass
 
 def main():
+    pygame.init()
     win = pygame.display.set_mode((width + 1, width + 1))
-    snake = Snake((255, 0, 0), (rows // 2, rows // 2))
+    snake = Snake((255, 0, 0), iniPos)
     snack = randomSnack(win, snake)
     clock = pygame.time.Clock()
     tick = minTick
 
     randomSnack(win, snake)
 
-    flag = True
-    while flag:
+    game_over = False
+    while not game_over:
         redrawWindow(win, snake, snack)
         clock.tick(tick)
         snake.move()
