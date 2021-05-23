@@ -37,7 +37,7 @@ class Cube():
             x -= 1
         return x, y
 
-    def draw(self, surface, beforePos=None, eyes=False):
+    def draw(self, surface, beforePos=None, eyes=False, small=False):
         x, y = self.pos
         ox, oy = rowToX(x), rowToX(y)
         w, h = rowW - 1, rowW - 1
@@ -53,6 +53,12 @@ class Cube():
                 h += 1
             if by > y:
                 h += 1
+        if small:
+            dif = (rowToX(x + 1) - ox) / 4
+            ox += dif
+            oy += dif
+            w -= dif * 2
+            h -= dif * 2
         pygame.draw.rect(surface, self.color, pygame.Rect((ox, oy), (w, h)))
         if eyes:
             radius = rowW // 8
@@ -99,7 +105,9 @@ class Snake():
             oldPos = c.pos
             if c == self.head:
                 if not c.move(self.turns[c.pos]) or c.pos in self.turns:
-                    message_box('Has Perdido', 'Vuelve a intentarlo')
+                    showLose(self)
+                if self.snakeSize() == rows * rows - 1:
+                    showWin()
             else:
                 c.move(self.turns[c.pos])
             if c == self.body[-1]:
@@ -149,7 +157,7 @@ def drawGrid(surface):
 def redrawWindow(surface, snake, snack):
     surface.fill((0, 0, 0))
     drawGrid(surface)
-    snack.draw(surface)
+    snack.draw(surface, small=True)
     snake.draw(surface)
     font = pygame.font.SysFont("monospace", 15)
     score = font.render(f"Puntuació: {snake.snakeSize() - 2}", 1, (255, 255, 255))
@@ -165,8 +173,14 @@ def randomSnack(surface, snake):
 def randomRow():
     return random.randint(0, rows-1)
 
-def message_box(subject, content):
-    pass
+def showLose(snake):
+    print('Has perdut!')
+    print(f'Puntuació: {snake.snakeSize() - 2}')
+    sys.exit()
+
+def showWin():
+    print('Has guanyat!')
+    sys.exit()
 
 def main():
     pygame.init()
@@ -178,8 +192,7 @@ def main():
 
     randomSnack(win, snake)
 
-    game_over = False
-    while not game_over:
+    while True:
         redrawWindow(win, snake, snack)
         clock.tick(tick)
         snake.move()
