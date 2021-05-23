@@ -5,10 +5,12 @@ import pygame
 import tkinter as tk
 from tkinter import messagebox
 
-width = 500
-rows = 20
+width = 600
+rows = 30
 rowW = width // rows
-tick = 3
+minTick = 1.5
+maxTick = 30
+tickInc = (maxTick) / (rows * rows)
 
 class Cube():
     def __init__(self, pos, color=(0,255,0)):
@@ -70,6 +72,10 @@ class Snake():
         self.color = color
         self.head = Cube(pos)
         self.body.append(self.head)
+        x, y = pos
+        sC = Cube((x, y+1))
+        self.turns[sC.pos] = 1
+        self.body.append(sC)
         self.mdir = 1
 
     def move(self):
@@ -122,6 +128,9 @@ class Snake():
     def isInSnake(self, pos):
         return pos == self.head.pos or pos in self.turns
 
+    def snakeSize(self):
+        return len(self.body)
+
 def rowToX(row):
     return row * rowW + 1
 
@@ -165,6 +174,7 @@ def main():
     snake = Snake((255, 0, 0), (rows // 2, rows // 2))
     snack = randomSnack(win, snake)
     clock = pygame.time.Clock()
+    tick = minTick
 
     randomSnack(win, snake)
 
@@ -176,6 +186,7 @@ def main():
         if snake.isInSnake(snack.pos):
             snake.addCube()
             snack = randomSnack(win, snake)
+            tick += tickInc
 
 if __name__ == "__main__":
     main()
